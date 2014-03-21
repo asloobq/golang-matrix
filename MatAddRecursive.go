@@ -37,9 +37,7 @@ size := len(matA)
                 ch1)
         go addMatRecursive(matA[end:size], matB[end:size], matC[end:size],
                baseSize, ch2)
-        fmt.Printf("addMatRecursive size = %d | split from 0 to %d\n", 
-                size, end) 
-        //Wait for multiplications to complete
+        //Wait for additions to complete
         <- ch1
         <- ch2 
 
@@ -54,7 +52,6 @@ size := len(matA)
           chStart := make(chan bool)
           go addMatRecursive(matA, matB, matC, baseSize, chStart)
           <- chStart
-
           ch <- true
 }
 
@@ -68,11 +65,15 @@ mat := make([][]int, size)
 }
 
 
-func initializeMat(mat [][]int, ch chan bool){
+func initializeMat(mat [][]int, ch chan bool, b bool){
 size := len(mat)
           for i := 0; i < size; i++ {
               for j := 0; j < size; j++ {
+		  if b {
                   mat[i][j] = rand.Intn(10);
+		  } else {
+		  mat[i][j] = -1
+		  }
               }
           }
 
@@ -119,14 +120,14 @@ chA := make(chan [][]int)			//Creating channel for matrix A
                  // chCBool := make(chan bool)
 
                  // Initialize matrix A
-                 go initializeMat(matA, chBool)
-                 go initializeMat(matB, chBool)
-                 //go initializeMat(matC, chCBool)
+                 go initializeMat(matA, chBool, true)
+                 go initializeMat(matB, chBool, true)
+                 go initializeMat(matC, chBool, false)
 
                  //Wait for initialization
                  <- chBool
                  <- chBool
-                 //<- chCBool
+                 <- chBool
 
                  //Print matrix A
                  fmt.Println("Matrix A loaded with random numbers:")
