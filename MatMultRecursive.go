@@ -1,5 +1,5 @@
 /****************************************************************************/
-//          MATRIX ADDITION WITH RECURSIVE DIVIDE AND CONQUER
+//MATRIX MULTIPLICATION WITH RECURSIVE WORK DIVISION
 /****************************************************************************/
 package main
 
@@ -10,52 +10,58 @@ import (
         "strconv"
        )
 
-func addMatRecursive(matA [][]int, matB [][]int, matC [][]int, baseSize int,
-        ch chan bool) {
+
+func multMatRecursive(matA [][]int, matB [][]int, matC [][]int, baseSize int,
+        startRow int, rowCount int, ch chan bool) {
     //Get current size
 size := len(matA)
-    if(size <= baseSize) {
-        //Do serial addition
-        for i := 0; i < size; i++ {
-              for j := 0; j < size; j++ {
-                  matC[i][j] = matA[i][j] + matB[i][j]
-              }
-          }
+          if(rowCount <= baseSize) {
+              //Do serial multiplication
+endRow := startRow + rowCount
+
+            for i := startRow; i < endRow; i++ {      
+                for j := 0; j < size; j++ {
+
+                    matC[i][j] = 0
+                        for k:=0; k < size; k++ {
+                            matC[i][j] += ( matA[i][k] * matB[k][j] )
+                        }
+                }
+            }
+
         ch <- true
-    } else {
+          } else {
 
-        //Recursive divide and conquer
+              //Recursive divide and conquer
 
-        //End is mid point
-        end := size / 2
+ch1 := make(chan bool)
+         ch2 := make(chan bool)
 
-        ch1 := make(chan bool)
-        ch2 := make(chan bool)
+         go multMatRecursive(matA, matB, matC, baseSize, startRow,
+                 rowCount/2, ch1)
+         go multMatRecursive(matA, matB, matC, baseSize, startRow + (rowCount/2),
+                 rowCount - (rowCount /2), ch2)
+         fmt.Printf("multMatRecursive size = %d | split from %d to %d\n", 
+                 size, startRow, rowCount/2) 
+         //Wait for multiplications to complete
+         <- ch1
+         <- ch2 
 
-        go addMatRecursive(matA[0:end], matB[0:end], matC[0:end], baseSize,
-                ch1)
-        go addMatRecursive(matA[end:size], matB[end:size], matC[end:size],
-               baseSize, ch2)
-        fmt.Printf("addMatRecursive size = %d | split from 0 to %d\n", 
-                size, end) 
-        //Wait for multiplications to complete
-        <- ch1
-        <- ch2 
-
-        ch <-true
-    }
+         ch <-true
+          }
 }
 
-func addMatRecursiveBegin(matA [][]int, matB [][]int, matC [][]int, splits int,
-        ch chan bool){
+func multMatRecursiveBegin(matA [][]int, matB [][]int, matC [][]int, 
+        splits int, ch chan bool) {
 size := len(matA)
           baseSize := size /splits
           chStart := make(chan bool)
-          go addMatRecursive(matA, matB, matC, baseSize, chStart)
+          go multMatRecursive(matA, matB, matC, baseSize, 0, size, chStart)
           <- chStart
 
           ch <- true
 }
+
 
 func allocateMat(size int, ch chan [][]int) {
     // Allocate Memory
@@ -136,13 +142,13 @@ chA := make(chan [][]int)			//Creating channel for matrix A
                  fmt.Println("Matrix C loaded with -1s:")
                  print(matC, size)
 
-                 /********  ADDITION  ***********/
+                 /********  MULTIPLICATION  ***********/
 
-                 //Do addition
-                 go addMatRecursive(matA, matB, matC, splits, chBool)
+                 //Do multiplication
+                 go multMatRecursiveBegin(matA, matB, matC, splits, chBool)
                  <- chBool
 
-                 fmt.Println("Matrix C holds result after A[] + B[]:")
+                 fmt.Println("Matrix C holds result after A[] * B[]:")
                  print(matC, size)
          } else {
              fmt.Println("usage is ./executable <splits> <size>")
