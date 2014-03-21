@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
-
+import (
+        "fmt"
+        "math/rand"
+       )
 
 //Allcoates Memory and returns matrix
 
@@ -11,8 +13,30 @@ mat := make([][]int, size)
 	     for i := range mat {
 		     mat[i] = make([]int, size)
 	     }
-     fmt.Println("mat[0][0] =", mat[0][0])
 	     ch <- mat
+}
+
+
+func initialize_mat(mat [][]int, size int, ch chan [][]int){
+    //var seed int64
+    //seed = 10
+    for i := 0; i < size; i++ {
+        for j := 0; j < size; j++ {
+           // seed =  rand.Seed(seed);
+            mat[i][j] = rand.Intn(10);
+        }
+    }
+
+    ch <- mat
+}
+
+func print(mat [][]int, size int) {
+    for i := 0; i < size; i++ {
+        for j := 0; j < size; j++ {
+            fmt.Printf("ary[%d][%d] = %d", i, j, mat[i][j]);
+        }
+        fmt.Println("");
+    }
 }
 
 
@@ -37,14 +61,21 @@ func main() {
 		a := <-chA
 		//}
 
+        // Initialize matrix A
+        go initialize_mat(a, size, chA)
+        a = <- chA
+
+        //Print matrix A
+        print(a, size);
+
 		// array elements initialized to 0
-		fmt.Println("a[0][0] =", a[0][0])
+		//fmt.Println("a[0][0] =", a[0][0])
 
 		// assign
-		a[size-1][size-1] = 7
+		//a[size-1][size-1] = 7
 
 		// retrieve
-		fmt.Printf("a[%d][%d] = %d\n", size-1, size-1, a[size-1][size-1])
+		//fmt.Printf("a[%d][%d] = %d\n", size-1, size-1, a[size-1][size-1])
 
 		// remove only reference
 		a = nil
