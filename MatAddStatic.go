@@ -8,11 +8,7 @@ import (
        )
 
 /*
- 1] Initilise matC to -1
  2] Add go timer
- 3] Handle size < splits
- 4] Free memory
- 5] Comment out print.
  */
 
 //Allocates Memory and returns matrix
@@ -43,9 +39,11 @@ func addMatStatic(matA [][]int, matB [][]int, matC [][]int, splits int,
 
 size := len(matA)   //number of rows and columns
           chBool := make(chan bool)
+	  if size < splits {
+		splits = size
+		}
           chunkSize := size / splits  //rows to compute by 1 go routine
 
-          fmt.Printf("addMatStatic chunkSize = %d \n", chunkSize)
 
           i := 0
           for ; i <= (splits-2); i++ {
@@ -54,18 +52,15 @@ start := i*chunkSize
            end := start + chunkSize
            go addMatBlock(matA[start:end], matB[start:end], matC[start:end], size,
                    chBool)
-           fmt.Printf("matAddStatic i = %d \n", i)
           }
 
       //handle last split separately
 start := i*chunkSize
            go addMatBlock(matA[start:], matB[start:], matC[start:], size,
                    chBool)
-           fmt.Printf("matAddStatic i = %d \n", i)
 
            for i:= 0; i < splits; i++ {
                <- chBool
-                   fmt.Printf("matAddStatic sync i = %d\n", i)
            }
 
        ch <- true;
@@ -82,11 +77,15 @@ mat := make([][]int, size)
 }
 
 
-func initializeMat(mat [][]int, ch chan bool){
+func initializeMat(mat [][]int, ch chan bool, b bool){
 size := len(mat)
           for i := 0; i < size; i++ {
               for j := 0; j < size; j++ {
+		if b {
                   mat[i][j] = rand.Intn(10);
+		} else {
+		 mat[i][j] = -1;
+		}
               }
           }
 
@@ -132,14 +131,14 @@ func main() {
         // chCBool := make(chan bool)
 
         // Initialize matrix A
-        go initializeMat(matA, chBool)
-        go initializeMat(matB, chBool)
-        //go initializeMat(matC, chCBool)
+        go initializeMat(matA, chBool, true)
+        go initializeMat(matB, chBool, true)
+        go initializeMat(matC, chBool, false)
 
         //Wait for initialization
         <- chBool
         <- chBool
-        //<- chCBool
+        <- chBool
 
         //Print matrix A
         fmt.Println("Matrix A loaded with random numbers:")
