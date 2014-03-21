@@ -8,6 +8,7 @@ import (
         "math/rand"
         "os"
         "strconv"
+	"time"
        )
 
 
@@ -41,8 +42,6 @@ ch1 := make(chan bool)
                  rowCount/2, ch1)
          go multMatRecursive(matA, matB, matC, baseSize, startRow + (rowCount/2),
                  rowCount - (rowCount /2), ch2)
-         fmt.Printf("multMatRecursive size = %d | split from %d to %d\n", 
-                 size, startRow, rowCount/2) 
          //Wait for multiplications to complete
          <- ch1
          <- ch2 
@@ -54,6 +53,9 @@ ch1 := make(chan bool)
 func multMatRecursiveBegin(matA [][]int, matB [][]int, matC [][]int, 
         splits int, ch chan bool) {
 size := len(matA)
+	  if size < splits {
+	  splits = size
+	  }
           baseSize := size /splits
           chStart := make(chan bool)
           go multMatRecursive(matA, matB, matC, baseSize, 0, size, chStart)
@@ -73,11 +75,15 @@ mat := make([][]int, size)
 }
 
 
-func initializeMat(mat [][]int, ch chan bool){
+func initializeMat(mat [][]int, ch chan bool, b bool){
 size := len(mat)
           for i := 0; i < size; i++ {
               for j := 0; j < size; j++ {
+		  if b {
                   mat[i][j] = rand.Intn(10);
+		 } else {
+		  mat[i][j] = -1
+		 }
               }
           }
 
@@ -95,7 +101,7 @@ func print(mat [][]int, size int) {
 
 
 func main() {
-
+t1 := time.Now()
 chA := make(chan [][]int)			//Creating channel for matrix A
          chB := make(chan [][]int)			//Creating channel for matrix B
          chC := make(chan [][]int)			//Creating channel for matrix C
@@ -123,14 +129,14 @@ chA := make(chan [][]int)			//Creating channel for matrix A
                  // chCBool := make(chan bool)
 
                  // Initialize matrix A
-                 go initializeMat(matA, chBool)
-                 go initializeMat(matB, chBool)
-                 //go initializeMat(matC, chCBool)
+                 go initializeMat(matA, chBool, true)
+                 go initializeMat(matB, chBool, true)
+                 go initializeMat(matC, chBool, false)
 
                  //Wait for initialization
                  <- chBool
                  <- chBool
-                 //<- chCBool
+                 <- chBool
 
                  //Print matrix A
                  fmt.Println("Matrix A loaded with random numbers:")
@@ -150,6 +156,9 @@ chA := make(chan [][]int)			//Creating channel for matrix A
 
                  fmt.Println("Matrix C holds result after A[] * B[]:")
                  print(matC, size)
+		 duration := time.Since(t1)
+                 seconds := duration.Seconds()
+                 fmt.Println("Running time = ", seconds, " s")
          } else {
              fmt.Println("usage is ./executable <splits> <size>")
          }
