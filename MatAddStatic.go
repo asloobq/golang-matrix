@@ -7,6 +7,41 @@ import (
 
 //Allocates Memory and returns matrix
 
+/*
+ Calculates addition of the matrices A and B for row 
+ numbers [start, end) 
+ */
+func addMatBlock(matA [][]int, matB [][]int, matC [][]int, 
+        size int, start int, end int, ch chan bool){
+    
+    for i := start; i < end; i++ {
+        for j := 0; j < size; j++ {
+            matC[i][j] = matA[i][j] + matB[i][j]
+        }
+    }
+
+    ch <- true
+}
+
+/*
+  Breaks down matrix A and B into 'size / split' chunks.
+   Calls 'addMatBlock' split number of times.
+
+ */
+func addMatStatic(matA [][]int, matB [][]int, matC [][]int, 
+        size int, splits int, ch chan bool){
+    
+    //chBool := make(chan bool)
+    //chunkSize := size / splits
+    for i:= 0; i < splits; i++ {
+        //addMatBlock(matA, matB, matC, size, i*chunkSize, 
+        //        i*chunkSize + chunkSize, chBool)
+
+    }
+
+    ch <- true
+}
+
 func allocateMat(size int, ch chan [][]int) {
 	// Allocate Memory
 mat := make([][]int, size)
@@ -17,17 +52,15 @@ mat := make([][]int, size)
 }
 
 
-func initializeMat(mat [][]int, size int, ch chan [][]int){
-    //var seed int64
-    //seed = 10
+func initializeMat(mat [][]int, size int, ch chan bool){
+    
     for i := 0; i < size; i++ {
         for j := 0; j < size; j++ {
-           // seed =  rand.Seed(seed);
             mat[i][j] = rand.Intn(10);
         }
     }
 
-    ch <- mat
+    ch <- true
 }
 
 func print(mat [][]int, size int) {
@@ -41,7 +74,7 @@ func print(mat [][]int, size int) {
 
 
 func main() {
-	var size int
+var size int
 		
 		chA := make(chan [][]int)			//Creating channel for matrix A
 		chB := make(chan [][]int)			//Creating channel for matrix B
@@ -62,16 +95,21 @@ func main() {
 		matB := <-chB
         matC := <-chC
 
+
+        chABool := make(chan bool) 
+        chBBool := make(chan bool)
+       // chCBool := make(chan bool)
+
         // Initialize matrix A
-        go initializeMat(matA, size, chA)
-        go initializeMat(matB, size, chB)
-        go initializeMat(matC, size, chC)
+        go initializeMat(matA, size, chABool)
+        go initializeMat(matB, size, chBBool)
+        //go initializeMat(matC, size, chCBool)
 
         //Wait for initialization
-        matA = <-chA
-    	matB = <-chB
-        matC = <-chC
-    
+        <- chABool
+        <- chBBool
+        //<- chCBool
+
         //Print matrix A
         fmt.Println("Matrix A loaded with random numbers:")
         print(matA, size)
@@ -79,19 +117,14 @@ func main() {
         fmt.Println("Matrix B loaded with random numbers:")
         print(matB, size)
         
-        fmt.Println("Matrix C loaded with random numbers:")
+        fmt.Println("Matrix C loaded with -1s:")
 		print(matC, size)
-		
+    /*
+        //Do addition
+        go addMatBlock(matA, matB, matC, size, 0, size, chC)
+        matC = <- chC        
         
-        //fmt.Println("a[0][0] =", a[0][0])
-
-		// assign
-		//a[size-1][size-1] = 7
-
-		// retrieve
-		//fmt.Printf("a[%d][%d] = %d\n", size-1, size-1, a[size-1][size-1])
-
-		// remove only reference
-		//a = nil
-		// memory allocated earlier with make can now be garbage collected.
+        fmt.Println("Matrix C holds result after A[] + B[]:")
+		print(matC, size)
+    */
 }
