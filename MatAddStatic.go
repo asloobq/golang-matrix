@@ -5,11 +5,8 @@ import (
 		"math/rand"
 		"os"
 		"strconv"
+		"time"
        )
-
-/*
- 2] Add go timer
- */
 
 //Allocates Memory and returns matrix
 
@@ -103,7 +100,7 @@ func print(mat [][]int, size int) {
 
 
 func main() {
-
+t1 := time.Now()
 		chA := make(chan [][]int)			//Creating channel for matrix A
 		chB := make(chan [][]int)			//Creating channel for matrix B
 		chC := make(chan [][]int)			//Creating channel for matrix C
@@ -158,6 +155,9 @@ func main() {
 
         fmt.Println("Matrix C holds result after A[] + B[]:")
         print(matC, size)
+	duration := time.Since(t1)
+        seconds := duration.Seconds()
+        fmt.Println("Running time = ", seconds, " s")
         } else {
             fmt.Println("usage is ./executable <splits> <size>")
         }
