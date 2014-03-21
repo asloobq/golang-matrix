@@ -1,8 +1,10 @@
 package main
 
 import (
-        "fmt"
-        "math/rand"
+		"fmt"
+		"math/rand"
+		"os"
+		"strconv"
        )
 
 //Allocates Memory and returns matrix
@@ -84,28 +86,28 @@ size := len(mat)
 }
 
 func print(mat [][]int, size int) {
-    for i := 0; i < size; i++ {
-        for j := 0; j < size; j++ {
-            fmt.Printf("ary[%d][%d] = %d  ", i, j, mat[i][j]);
-        }
-        fmt.Println("");
-    }
+	for i := 0; i < size; i++ {
+		for j := 0; j < size; j++ {
+			fmt.Printf("ary[%d][%d] = %d  ", i, j, mat[i][j]);
+		}
+		fmt.Println("");
+	}
 }
 
 
 func main() {
-    var size int
 
-        chA := make(chan [][]int)			//Creating channel for matrix A
-        chB := make(chan [][]int)			//Creating channel for matrix B
-        chC := make(chan [][]int)			//Creating channel for matrix C
+		chA := make(chan [][]int)			//Creating channel for matrix A
+		chB := make(chan [][]int)			//Creating channel for matrix B
+		chC := make(chan [][]int)			//Creating channel for matrix C
 
-        //Accept matrix size as input
-        fmt.Print("enter size: ")
-        fmt.Scan(&size)
+		//Accept matrix size as input
 
-
-        //Allcoating Memory of Matrices concurrently
+		//Commnad Line Arguments for splits and size of matrix
+		if len(os.Args) == 3{
+			
+			size, _ := strconv.Atoi(os.Args[2])
+			//Allcoating Memory of Matrices concurrently
         go allocateMat(size, chA)
         go allocateMat(size, chB)
         go allocateMat(size, chC)
@@ -149,5 +151,7 @@ func main() {
 
         fmt.Println("Matrix C holds result after A[] + B[]:")
         print(matC, size)
-
+        } else {
+            fmt.Println("usage is ./executable <splits> <size>")
+        }
 }
