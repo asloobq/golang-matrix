@@ -7,6 +7,14 @@ import (
 		"strconv"
        )
 
+/*
+ 1] Initilise matC to -1
+ 2] Add go timer
+ 3] Handle size < splits
+ 4] Free memory
+ 5] Comment out print.
+ */
+
 //Allocates Memory and returns matrix
 
 /*
@@ -107,6 +115,7 @@ func main() {
 		if len(os.Args) == 3{
 			
 			size, _ := strconv.Atoi(os.Args[2])
+            splits, _ := strconv.Atoi(os.Args[1])
 			//Allcoating Memory of Matrices concurrently
         go allocateMat(size, chA)
         go allocateMat(size, chB)
@@ -144,7 +153,6 @@ func main() {
 
         /********  ADDITION  ***********/
 
-        splits := 2
         //Do addition
         go addMatStatic(matA, matB, matC, splits, chBool)
         <- chBool
