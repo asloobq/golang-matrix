@@ -79,7 +79,7 @@ size := len(mat)
           for i := 0; i < size; i++ {
               for j := 0; j < size; j++ {
 		if b {
-                  mat[i][j] = rand.Intn(10);
+                  mat[i][j] = rand.Intn(size);
 		} else {
 		 mat[i][j] = -1;
 		}
@@ -138,13 +138,13 @@ t1 := time.Now()
         <- chBool
 
         //Print matrix A
-        fmt.Println("Matrix A loaded with random numbers:")
+        fmt.Println("\nMatrix A loaded with random numbers:\n")
         print(matA, size)
 
-        fmt.Println("Matrix B loaded with random numbers:")
+        fmt.Println("\nMatrix B loaded with random numbers:\n")
         print(matB, size)
 
-        fmt.Println("Matrix C loaded with -1s:")
+        fmt.Println("\nMatrix C loaded with -1s:\n")
         print(matC, size)
 
         /********  ADDITION  ***********/
@@ -153,11 +153,11 @@ t1 := time.Now()
         go addMatStatic(matA, matB, matC, splits, chBool)
         <- chBool
 
-        fmt.Println("Matrix C holds result after A[] + B[]:")
+        fmt.Println("\nMatrix C holds result after A[] + B[]:\n")
         print(matC, size)
 	duration := time.Since(t1)
         seconds := duration.Seconds()
-        fmt.Println("Running time = ", seconds, " s")
+        fmt.Println("\nRunning time = ", seconds, " s\n")
         } else {
             fmt.Println("usage is ./executable <splits> <size>")
         }
